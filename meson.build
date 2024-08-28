@@ -10,4 +10,6 @@ dependencies = [
 
 sources = files('main.vala')
 
-executable('demo-app', sources, dependencies: dependencies)
+executable('gst-mipi-demo', sources, dependencies: dependencies, install: true)
+install_data('props.json', install_dir: get_option('datadir') / 'gst-mipi-demo')
+
