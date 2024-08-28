@@ -54,7 +54,7 @@ public class DemoApp : Window {
 
         void parse_json(FlowBox propbox) {
             var parser = new Json.Parser();
-            parser.load_from_file("props.json");
+            parser.load_from_file("/usr/share/gst-mipi-demo/props.json");
             var root = parser.get_root().get_object();
             var props = root.get_array_member("Properties");            
             
