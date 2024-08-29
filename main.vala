@@ -5,6 +5,7 @@ using Json;
 public class DemoApp : Window {
         Pipeline pipeline;
         Element src;
+        FlowBox propbox;
         
         construct {
                 Widget video_area;
@@ -28,15 +29,13 @@ public class DemoApp : Window {
                 var stop_button = new Button.from_icon_name ("media-playback-stop", Gtk.IconSize.BUTTON);
                 stop_button.clicked.connect (on_stop);
 
-                var propbox = new FlowBox();
+                propbox = new FlowBox();
                 vbox.pack_start(propbox);
 
                 var bb = new ButtonBox (Orientation.HORIZONTAL);
                 bb.add (play_button);
                 bb.add (stop_button);
                 vbox.pack_start (bb, false);
-
-                parse_json(propbox);
 
                 add (vbox);
                 destroy.connect(Gtk.main_quit);
@@ -51,10 +50,10 @@ public class DemoApp : Window {
                 pipeline.set_state (Gst.State.READY);
         }
 
-        void parse_json(FlowBox propbox) {
+        public void load_config(string filename) {
             var parser = new Json.Parser();
             try {
-                parser.load_from_file("/usr/share/gst-mipi-demo/props.json");
+                parser.load_from_file(filename);
             } catch(Error e) {
                 printerr("error: %s\n", e.message);
                 printerr("Not generating controls.\n");
@@ -127,6 +126,7 @@ public class DemoApp : Window {
 
                 var app = new DemoApp ();
                 app.maximize();
+                app.load_config(config_filename);
                 app.show_all ();
 
                 Gtk.main ();
