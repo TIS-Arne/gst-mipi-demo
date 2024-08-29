@@ -39,7 +39,6 @@ public class DemoApp : Window {
                 parse_json(propbox);
 
                 add (vbox);
-                set_size_request(800, 600);
                 destroy.connect(Gtk.main_quit);
                 on_play();
         }
@@ -126,8 +125,9 @@ public class DemoApp : Window {
                     return 1;
                 }
 
-                var sample = new DemoApp ();
-                sample.show_all ();
+                var app = new DemoApp ();
+                app.maximize();
+                app.show_all ();
 
                 Gtk.main ();
 
