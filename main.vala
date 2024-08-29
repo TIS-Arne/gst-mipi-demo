@@ -54,7 +54,13 @@ public class DemoApp : Window {
 
         void parse_json(FlowBox propbox) {
             var parser = new Json.Parser();
-            parser.load_from_file("/usr/share/gst-mipi-demo/props.json");
+            try {
+                parser.load_from_file("/usr/share/gst-mipi-demo/props.json");
+            } catch(Error e) {
+                printerr("error: %s\n", e.message);
+                printerr("Not generating controls.\n");
+                return;
+            }
             var root = parser.get_root().get_object();
             var props = root.get_array_member("Properties");            
             
@@ -103,6 +109,22 @@ public class DemoApp : Window {
         public static int main (string[] args) {
                 Gst.init (ref args);
                 Gtk.init (ref args);
+
+                string? config_filename = "/usr/share/gst-mipi-demo/props.json";
+
+                GLib.OptionEntry[] options = {
+                    { "config", 'f', OptionFlags.NONE, OptionArg.FILENAME, ref config_filename, "Filename of configuration JSON", "CONFIGFILE"}
+                };
+
+                var opt_context = new OptionContext("- A simple MIPI demo application");
+                opt_context.set_help_enabled(true);
+                opt_context.add_main_entries(options, null);
+                try {
+                    opt_context.parse(ref args);
+                } catch(OptionError e) {
+                    printerr("error: %s\n", e.message);
+                    return 1;
+                }
 
                 var sample = new DemoApp ();
                 sample.show_all ();
