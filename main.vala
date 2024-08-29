@@ -15,14 +15,15 @@ public class DemoApp : Window {
 
                 pipeline = new Pipeline(null);
                 src = ElementFactory.make ("libcamerasrc", "src");
-                var convert = ElementFactory.make ("videoconvert", "convert");
+                var capsfilter = ElementFactory.make ("capsfilter", "capsfilter");
                 var sink = ElementFactory.make ("waylandsink", "sink");
 
+                capsfilter["caps"] = new Caps.simple("video/x-raw", "format", Type.STRING, "YUY2", 
+                                                    "width", Type.INT, 1920, "height", Type.INT, 1080, null);
 
-                pipeline.add_many(src, convert, sink);
-                
-                src.link(convert);
-                convert.link(sink);
+                pipeline.add_many(src, capsfilter, sink);
+                src.link(capsfilter);
+                capsfilter.link(sink);
                 
                 /*
                     Create a event box and use it as a display target for the waylandsink
@@ -30,7 +31,6 @@ public class DemoApp : Window {
                 video_area = new EventBox();
                 video_area.visible = true;
                 video_area.app_paintable = true;
-                video_area.vexpand = true;
 
                 video_area.realize.connect(() => {
                     Gdk.WaylandWindow window = video_area.get_window() as Gdk.WaylandWindow;
@@ -69,7 +69,7 @@ public class DemoApp : Window {
                 });    
 
                 var vbox = new Box (Gtk.Orientation.VERTICAL, 0);
-                vbox.pack_start (video_area, true);
+                vbox.pack_start (video_area, true, true);
 
                 var play_button = new Button.from_icon_name ("media-playback-start", Gtk.IconSize.BUTTON);
                 play_button.clicked.connect (on_play);
