@@ -83,18 +83,21 @@ public class DemoApp : Window {
                         slider.value_changed.connect(() => {
                             src[name] = slider.get_value();
                         });
+                        slider.set_size_request(180, -1);
                         box.pack_start(slider, true, true, 0);
                     }
                     break;
                     case "toggle":
                     {
                         var value = prop.get_boolean_member("value");
+                        var tbox = new Box(Orientation.VERTICAL, 0);
+                        box.pack_start(tbox, true, false, 0);
                         var toggle = new Switch();
                         toggle.set_active(value);
                         toggle.notify["active"].connect(() => {
                             src[name] = toggle.get_active();
                         });
-                        box.pack_start(toggle, true, true, 0);
+                        tbox.pack_start(toggle, true, false, 0);
                     }
                     break;
                     default:
