@@ -3,26 +3,73 @@ using Gst;
 using Json;
 
 public class DemoApp : Window {
-        Pipeline pipeline;
-        Element src;
-        FlowBox propbox;
+        protected Pipeline pipeline;
+        protected Element src;
+        protected FlowBox propbox;
+        protected Gst.Video.Overlay? overlay = null;
+
         
         construct {
-                Widget video_area;
+                EventBox video_area;
+                uint *handle = null;
 
                 pipeline = new Pipeline(null);
                 src = ElementFactory.make ("libcamerasrc", "src");
                 var convert = ElementFactory.make ("videoconvert", "convert");
-                var gtksink = ElementFactory.make ("gtksink", "sink");
-                gtksink.get ("widget", out video_area);
+                var sink = ElementFactory.make ("waylandsink", "sink");
 
-                pipeline.add_many(src, convert, gtksink);
+
+                pipeline.add_many(src, convert, sink);
                 
                 src.link(convert);
-                convert.link(gtksink);
+                convert.link(sink);
                 
+                /*
+                    Create a event box and use it as a display target for the waylandsink
+                 */
+                video_area = new EventBox();
+                video_area.visible = true;
+                video_area.app_paintable = true;
+                video_area.vexpand = true;
+
+                video_area.realize.connect(() => {
+                    Gdk.WaylandWindow window = video_area.get_window() as Gdk.WaylandWindow;
+                    handle = (uint*) (window.get_wl_surface());    
+                });
+ 
+                video_area.draw.connect(() => {
+                    if (overlay != null) {
+                        Gtk.Allocation alloc =  Gtk.Allocation();
+                        video_area.get_allocation(out alloc);
+                        overlay.set_render_rectangle(alloc.x, alloc.y, alloc.width, alloc.height);
+                    }
+                    return false;    
+                });
+
+                sink.bus.set_sync_handler((bus,message) => {
+                    if(Gst.Video.is_video_overlay_prepare_window_handle_message (message)) {
+                        overlay = message.src as Gst.Video.Overlay;
+                        assert (overlay != null);
+                        if (handle != null) {
+                            Gtk.Allocation alloc = Gtk.Allocation();
+                            video_area.get_allocation(out alloc);
+                            overlay.set_window_handle (handle);
+                            overlay.set_render_rectangle(alloc.x, alloc.y, alloc.width, alloc.height);
+                        }  
+                        return Gst.BusSyncReply.DROP;
+                    } else if (Gst.Wayland.is_wl_display_handle_need_context_message(message)) {
+                        Gst.Element element = message.src as Gst.Element;
+                        Gdk.WaylandDisplay gdk_display = video_area.get_display() as Gdk.WaylandDisplay;
+                        unowned Wl.Display display = gdk_display.get_wl_display();
+                        Gst.Context context = Gst.Wayland.display_handle_context_new(display);
+                        element.set_context(context);
+                        return Gst.BusSyncReply.DROP;
+                    }
+                    return Gst.BusSyncReply.PASS;
+                });    
+
                 var vbox = new Box (Gtk.Orientation.VERTICAL, 0);
-                vbox.pack_start (video_area);
+                vbox.pack_start (video_area, true);
 
                 var play_button = new Button.from_icon_name ("media-playback-start", Gtk.IconSize.BUTTON);
                 play_button.clicked.connect (on_play);
@@ -30,7 +77,7 @@ public class DemoApp : Window {
                 stop_button.clicked.connect (on_stop);
 
                 propbox = new FlowBox();
-                vbox.pack_start(propbox);
+                vbox.pack_start(propbox, false);
 
                 var bb = new ButtonBox (Orientation.HORIZONTAL);
                 bb.add (play_button);
