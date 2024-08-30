@@ -18,5 +18,5 @@ dependencies = [
 sources = files('main.vala', 'gtk3-wayland.vapi', 'gstreamer-wayland-1.0.vapi')
 
 executable('gst-mipi-demo', sources, dependencies: dependencies, install: true)
-install_data('props.json', install_dir: get_option('datadir') / 'gst-mipi-demo')
+install_data('config.json', install_dir: get_option('datadir') / 'gst-mipi-demo')
 
