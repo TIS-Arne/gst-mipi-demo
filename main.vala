@@ -125,10 +125,19 @@ public class DemoApp : Window {
                         var max = prop.get_double_member("max");
                         var step = prop.get_double_member("step");
                         var value = prop.get_double_member("value");
+                        var data_type = prop.get_string_member("data_type");
                         var adj = new Adjustment(value, min, max+1, step, 1.0, 1.0);
                         var slider = new Scale(Orientation.HORIZONTAL, adj);
+                        
                         slider.value_changed.connect(() => {
+                            switch(data_type){
+                                case "double":
                             src[name] = slider.get_value();
+                                    break;
+                                default:
+                                    src[name] = (int)slider.get_value();
+                                    break;
+                            }
                         });
                         slider.set_size_request(180, -1);
                         box.pack_start(slider, true, true, 0);
