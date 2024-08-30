@@ -1,0 +1,11 @@
+[Unit]
+Description=Start demo application
+After=weston.service
+Requires=weston.service
+[Service]
+Restart=on-failure
+Type=forking
+ExecStart=/opt/app/launch-gst-mipi-demo.sh
+RestartSec=1
+[Install]
+WantedBy=multi-user.target
