@@ -158,7 +158,7 @@ public class DemoApp : Window {
                 Gst.init (ref args);
                 Gtk.init (ref args);
 
-                string? config_filename = "/usr/share/gst-mipi-demo/props.json";
+                string? config_filename = "/usr/share/gst-mipi-demo/config.json";
 
                 GLib.OptionEntry[] options = {
                     { "config", 'f', OptionFlags.NONE, OptionArg.FILENAME, ref config_filename, "Filename of configuration JSON", "CONFIGFILE"}
