@@ -11,4 +11,4 @@ while [ ! -e  $XDG_RUNTIME_DIR/wayland-1 ] ; do sleep 0.1; done
 sleep 1
 unset DISPLAY
 export WAYLAND_DISPLAY=/var/run/wayland-0
-cd /opt/app ; XDG_RUNTIME_DIR=/var/run/user/0 ./gst-mipi-demo -f /opt/gst-mipi-demo/config.json
+cd /opt/gst-mipi-demo ; XDG_RUNTIME_DIR=/var/run/user/0 ./gst-mipi-demo -f /opt/gst-mipi-demo/config.json
