@@ -4,7 +4,7 @@ After=weston.service
 Requires=weston.service
 [Service]
 Restart=on-failure
-Type=forking
+Type=simple
 ExecStart=/opt/gst-mipi-demo/launch-gst-mipi-demo.sh
 RestartSec=1
 [Install]
