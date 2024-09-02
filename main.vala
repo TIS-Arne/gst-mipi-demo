@@ -109,7 +109,7 @@ public class DemoApp : Window {
         }
         
         void on_stop() {
-            pipeline.set_state (Gst.State.READY);
+            pipeline.set_state (Gst.State.NULL);
         }
 
         void on_change_device() {
