@@ -114,7 +114,7 @@ public class DemoApp : Window {
 
         void on_change_device() {
             on_stop();
-            var wanted_caps = Caps.from_string("video/x-raw,width=1920,height=1080;video/x-raw,width=1280,height=720");
+            var wanted_caps = Caps.from_string("video/x-raw,format=YUY2,width=1920,height=1080;video/x-raw,format=YUY2,width=1280,height=720");
             devices.devices.foreach( (f) => {
                 if (f.display_name == devices_box.get_active_text()) {
                     f.reconfigure_element(src);
