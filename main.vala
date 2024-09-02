@@ -71,7 +71,6 @@ public class DemoApp : Window {
                 });    
 
                 var vbox = new Box (Gtk.Orientation.VERTICAL, 0);
-                vbox.pack_start (video_area, true, true);
 
                 var play_button = new Button.from_icon_name ("media-playback-start", Gtk.IconSize.BUTTON);
                 play_button.clicked.connect (on_play);
@@ -80,14 +79,17 @@ public class DemoApp : Window {
                 var stop_button = new Button.from_icon_name ("media-playback-stop", Gtk.IconSize.BUTTON);
                 stop_button.clicked.connect (on_stop);
 
-                propbox = new FlowBox();
-                vbox.pack_start(propbox, false);
-
                 var bb = new ButtonBox (Orientation.HORIZONTAL);
                 bb.add (play_button);
                 bb.add (devices_box);
                 bb.add (stop_button);
                 vbox.pack_start (bb, false);
+
+                vbox.pack_start (video_area, true, true);
+
+                propbox = new FlowBox();
+                vbox.pack_start(propbox, false);
+
 
                 add (vbox);
                 destroy.connect(Gtk.main_quit);
