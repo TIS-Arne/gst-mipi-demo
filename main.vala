@@ -5,9 +5,11 @@ using Json;
 public class DemoApp : Window {
         protected Pipeline pipeline;
         protected Element src;
+        protected Element capsfilter;
         protected FlowBox propbox;
         protected Gst.Video.Overlay? overlay = null;
-
+        protected Devices devices = null;
+        protected ComboBoxText devices_box;
         
         construct {
                 EventBox video_area;
@@ -15,11 +17,11 @@ public class DemoApp : Window {
 
                 pipeline = new Pipeline(null);
                 src = ElementFactory.make ("libcamerasrc", "src");
-                var capsfilter = ElementFactory.make ("capsfilter", "capsfilter");
+                capsfilter = ElementFactory.make ("capsfilter", "capsfilter");
                 var sink = ElementFactory.make ("waylandsink", "sink");
 
-                capsfilter["caps"] = new Caps.simple("video/x-raw", "format", Type.STRING, "YUY2", 
-                                                    "width", Type.INT, 1920, "height", Type.INT, 1080, null);
+                capsfilter["caps"] = new Caps.simple("video/x-raw", 
+                    "format", Type.STRING, "YUY2",null);
 
                 pipeline.add_many(src, capsfilter, sink);
                 src.link(capsfilter);
@@ -73,6 +75,8 @@ public class DemoApp : Window {
 
                 var play_button = new Button.from_icon_name ("media-playback-start", Gtk.IconSize.BUTTON);
                 play_button.clicked.connect (on_play);
+                devices_box = new ComboBoxText ();
+                devices_box.changed.connect(on_change_device);
                 var stop_button = new Button.from_icon_name ("media-playback-stop", Gtk.IconSize.BUTTON);
                 stop_button.clicked.connect (on_stop);
 
@@ -81,20 +85,48 @@ public class DemoApp : Window {
 
                 var bb = new ButtonBox (Orientation.HORIZONTAL);
                 bb.add (play_button);
+                bb.add (devices_box);
                 bb.add (stop_button);
                 vbox.pack_start (bb, false);
 
                 add (vbox);
                 destroy.connect(Gtk.main_quit);
-                on_play();
+                Idle.add(create_device_list);
+        }
+
+        bool create_device_list() {
+            devices = new Devices ();
+            devices.devices.foreach((f) => {
+                devices_box.append_text  (f.display_name);
+                return true;
+            });
+            devices_box.set_active(0);
+            return false;
         }
         
         void on_play() {
-                pipeline.set_state (Gst.State.PLAYING);
+            pipeline.set_state (Gst.State.PLAYING);
         }
         
         void on_stop() {
-                pipeline.set_state (Gst.State.READY);
+            pipeline.set_state (Gst.State.READY);
+        }
+
+        void on_change_device() {
+            on_stop();
+            var wanted_caps = Caps.from_string("video/x-raw,width=1920,height=1080;video/x-raw,width=1280,height=720");
+            devices.devices.foreach( (f) => {
+                if (f.display_name == devices_box.get_active_text()) {
+                    f.reconfigure_element(src);
+                    var caps = f.caps.intersect(wanted_caps, CapsIntersectMode.FIRST);
+                    if (caps.is_empty()) {
+                        caps = new Caps.simple("video/x-raw", "format", Type.STRING, "YUY2", null);
+                    }
+                    capsfilter["caps"] = caps;
+                }
+                return true;
+            });
+            on_play();
         }
 
         public void load_config(string filename) {
@@ -132,7 +164,7 @@ public class DemoApp : Window {
                         slider.value_changed.connect(() => {
                             switch(data_type){
                                 case "double":
-                            src[name] = slider.get_value();
+                                    src[name] = slider.get_value();
                                     break;
                                 default:
                                     src[name] = (int)slider.get_value();
